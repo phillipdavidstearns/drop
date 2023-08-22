@@ -1,0 +1,14 @@
+[Unit]
+Description=Drop - A Strobe Light Control System by Phillip Stearns
+After=network.target
+Wants=pigpiod.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/src/drop/drop.py
+Restart=on-success
+RestartPreventExitStatus=SIGTERM SIGKILL
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
