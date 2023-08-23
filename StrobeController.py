@@ -40,12 +40,19 @@ class StrobeController():
     self.output = CD4094(channels=channels)
     self.retrigger = False
     self.shutdown = False
-    self.stack = OperationStack()
     self.clock = Divider()
-    self.delay_min = 0.03333333
+    self.delay_min = 0.025
     self.delay_max = 1
-    self.mode = 'shift'
-    self.delay_percentage = 0
+    self.lfsr_enabled = False
+    self.lfsr_parameters = None
+    self.strobe_enabled = False
+    self.strobe_parameters = None
+    self.strobe_invert_on_count=0
+    self.strobe_invert_off_count=0
+    self.strobe_invert_state=False
+    self.strobe_mute_on_count=0
+    self.strobe_mute_off_count=0
+    self.strobe_mute_state=False
 
   #-------Main Thread/Process Start and Stop-------
 
@@ -79,65 +86,35 @@ class StrobeController():
 
   #-------Loop Delay Setter-------
 
-  def set_mode(self, mode):
-    if mode != self.mode:
-      self.mode = mode
-      if self.mode == 'strobe':
-        self.loop_delay = min(max(self.loop_delay, self.delay_min), self.delay_max)
-      elif self.mode == 'shift':
-       self.loop_delay = min(max(self.loop_delay, 0.75 * self.delay_min), self.delay_max)
+  def set_loop_delay(self, percentage):
+    percentage = min(max(percentage, 0.0),1.0)
+    delay = percentage * (self.delay_max - self.delay_min) + self.delay_min
+    self.loop_delay = delay
+    return self.loop_delay
+
+  def nudge_loop_delay(self, percentage):
+    new_loop_delay = self.loop_delay * ( percentage + 1.0 )
+    if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
+      self.loop_delay = new_loop_delay
       return self.loop_delay
     else:
       return False
 
-  def set_delay(self, percentage):
-    self.delay_percentage = percentage
-    if self.mode == 'strobe':
-      delay = percentage * (self.delay_max - self.delay_min) + self.delay_min
-      self.loop_delay = delay
-    elif self.mode == 'shift':
-      delay = percentage * (self.delay_max - ( 0.75 * self.delay_min )) + (0.75 * self.delay_min)
-      self.loop_delay = delay
-    else:
-      return False
-    return self.loop_delay
-
-  def nudge_loop_delay(self, percentage):
-    nudge_amount = self.loop_delay * ( 1.0 + percentage)
-    if self.mode == 'strobe':
-      if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
-        self.loop_delay += new_loop_delay
-    elif self.mode == 'shift':
-      if new_loop_delay <= self.delay_max and new_loop_delay >= ( 0.75 * self.delay_min ):
-        self.loop_delay = new_loop_delay
-    else:
-      return False
-    self.delay_percentage = ( self.loop_delay - self.delay_min ) / ( self.delay_max - self.delay_min )
-    return self.loop_delay
-
   def mult_loop_delay(self, value):
     new_loop_delay = self.loop_delay * value
-    if self.mode == 'strobe':
-      if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
-        self.loop_delay = new_loop_delay
-    elif self.mode == 'shift':
-      if new_loop_delay <= self.delay_max and new_loop_delay >= ( 0.75 * self.delay_min ):
-        self.loop_delay = new_loop_delay
+    if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
+      self.loop_delay = new_loop_delay
+      return self.loop_delay
     else:
       return False
-    return self.loop_delay
 
   def div_loop_delay(self, value):
     new_loop_delay = self.loop_delay / value
-    if self.mode == 'strobe':
-      if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
-        self.loop_delay = new_loop_delay
-    elif self.mode == 'shift':
-      if new_loop_delay <= self.delay_max and new_loop_delay >= ( 0.75 * self.delay_min ):
-        self.loop_delay = new_loop_delay
+    if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
+      self.loop_delay = new_loop_delay
+      return self.loop_delay
     else:
       return False
-    return self.loop_delay
 
   #-------Register Bit Getter and Setter-------
 
@@ -177,6 +154,70 @@ class StrobeController():
     self.clock.inc()
     return register_state
 
+  def set_lfsr_parameters(self, parameters):
+    self.lfsr_parameters = parameters
+    return self.lfsr_parameters
+
+  def set_lfsr_enabled(self, value):
+    self.lfsr_enabled=value
+    return self.lfsr_enabled
+
+  def lfsr(self):
+    input_bit = 0
+    for tap in self.lfsr_parameters['taps']:
+      input_bit ^= self.get_register_bit(tap)
+    if self.lfsr_parameters['modEnabled']:
+      input_bit ^= self.clock.get_bit(
+        self.lfsr_parameters['modSource'],
+        self.lfsr_parameters['modQ']
+      )
+    if self.lfsr_parameters['direction'] == 'left':
+      self.shift_register_left(input_bit)
+    elif self.lfsr_parameters['direction'] == 'right':
+      self.shift_register_right(input_bit)
+    return self.register.get_state()
+
+  def set_strobe_parameters(self, parameters):
+    self.strobe_parameters = parameters
+    return self.strobe_parameters
+
+  def set_strobe_enabled(self, value):
+    self.strobe_enabled = value
+    return self.strobe_enabled
+  
+  def strobe(self):
+    if self.strobe_parameters['invert_enabled']:
+      if self.strobe_invert_state == False:
+        if self.strobe_invert_off_count < self.strobe_parameters['invert_off']:
+          self.strobe_invert_off_count+=1
+        elif self.strobe_invert_off_count >= self.strobe_parameters['invert_off']:
+          self.invert_register()
+          self.strobe_invert_state = True
+          self.strobe_invert_on_count=0
+      elif self.strobe_invert_state == True:
+        if self.strobe_invert_on_count < self.strobe_parameters['invert_on']:
+          self.strobe_invert_on_count+=1
+        elif self.strobe_invert_on_count >= self.strobe_parameters['invert_on']:
+          self.invert_register()
+          self.strobe_invert_state = False
+          self.strobe_invert_off_count = 0
+
+    if self.strobe_parameters['mute_enabled']:
+      if self.strobe_mute_state == False:
+        if self.strobe_mute_off_count < self.strobe_parameters['mute_off']:
+            self.strobe_mute_off_count+=1
+        elif self.strobe_mute_off_count >= self.strobe_parameters['mute_off']:
+          self.output.enable()
+          self.strobe_mute_state = True
+          self.strobe_mute_on_count=0
+      elif self.strobe_mute_state == True:
+        if self.strobe_mute_on_count < self.strobe_parameters['mute_on']:
+          self.strobe_mute_on_count+=1
+        elif self.strobe_mute_on_count >= self.strobe_parameters['mute_on']:
+          self.output.disable()
+          self.strobe_mute_state = False
+          self.strobe_mute_off_count = 0
+
   def loop(self):
     try:
       if self.retrigger and not self.shutdown:
@@ -184,78 +225,9 @@ class StrobeController():
         self.timer.daemon = True
         self.timer.start()
         self.update()
-        self.stack.execute()
+
+        if self.lfsr_enabled: self.lfsr()
+        if self.strobe_enabled: self.strobe()
+
     except Exception as e:
       logging.error('in StrobeController.loop(): %s' % repr(e))
-
-  def push(self, operation):
-    self.stack.push(operation)
-
-  def pop(self):
-    self.stack.pop()
-
-  def clear_operations(self):
-    self.stack.clear()
-
-if __name__ == '__main__':
-  import sys
-  from time import sleep
-
-  def shift_left_loop(controller):
-    controller.shift_register_left(controller.get_register_bit(7))
-
-  def speed_up(controller):
-    delay_min = 0.00625
-    if controller.loop_delay > delay_min:
-      controller.set_delay(controller.loop_delay * 0.95)
-    elif controller.loop_delay < delay_min:
-      controller.loop_delay = delay_min
-    elif controller.loop_delay == delay_min:
-      controller.stop_loop()
-      controller.clear_operations()
-      controller.reset_register()
-      controller.set_delay(0.0125)
-      controller.push(Operation(controller.invert_register))
-      controller.push(Operation(slow_down,{'controller':controller}))
-      controller.start_loop()
-
-  def slow_down(controller):
-    delay_max = 1.0
-    if controller.loop_delay < delay_max:
-      controller.set_delay(controller.loop_delay * 1.05)
-    elif controller.loop_delay > delay_max:
-      controller.loop_delay = delay_max
-    elif controller.loop_delay == delay_max:
-      controller.stop_loop()
-      controller.clear_operations()
-      controller.reset_register()
-      controller.set_register_bit(0,1)
-      controller.push(Operation(lfsr,{'controller':controller,'taps':[3,4,5]}))
-      controller.push(Operation(speed_up,{'controller':controller}))
-      controller.start_loop()
-
-  def lfsr(controller, taps=[], mod=0):
-    input_bit = 0
-    for tap in taps:
-      input_bit ^= controller.get_register_bit(tap)
-    input_bit ^= mod
-    controller.shift_register_left(input_bit)
-
-  try:
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-    
-    logging.debug('controller = StrobeController()')
-    controller = StrobeController()
-    controller.set_register_bit(0,1)
-    controller.push(Operation(shift_left_loop,{'controller':controller}))
-    controller.push(Operation(speed_up,{'controller':controller}))
-    controller.start_loop()
-
-    while True:
-      sleep(1)
-    
-  except Exception as e:
-    print('Doh! %s' % repr(e))
-  finally:
-    controller.stop()
-    sys.exit()

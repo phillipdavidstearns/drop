@@ -49,14 +49,17 @@ def set_register(parameters):
   else:
     return False
 
-def set_loop_delay(parameters):
-  return controller.set_delay(parameters['value'])
+# def set_loop_delay(parameters):
+#   return controller.set_delay(parameters['value'])
 
-def mult_loop_delay(parameters):
-  return controller.mult_loop_delay(parameters['value'])
+# def nudge_loop_delay(parameters):
+#   return controller.nudge_loop_delay(parameters['value'])
 
-def div_loop_delay(parameters):
-  return controller.div_loop_delay(parameters['value'])
+# def mult_loop_delay(parameters):
+#   return controller.mult_loop_delay(parameters['value'])
+
+# def div_loop_delay(parameters):
+#   return controller.div_loop_delay(parameters['value'])
 
 def set_loop_retrigger(parameters):
   if parameters['retrigger'] == True:
@@ -69,35 +72,33 @@ def set_loop_retrigger(parameters):
 #====================================================================================
 # Functions for Operations
 
-def lfsr(controller, parameters):
-  input_bit = 0
-  for tap in parameters['taps']:
-    input_bit ^= controller.get_register_bit(tap)
-  if parameters['modEnabled']:
-    input_bit ^= controller.clock.get_bit(parameters['modSource'], parameters['modQ'])
-  if parameters['direction'] == 'left':
-    controller.shift_register_left(input_bit)
-  elif parameters['direction'] == 'right':
-    controller.shift_register_right(input_bit)
+# def lfsr(controller, parameters):
+#   input_bit = 0
+#   for tap in parameters['taps']:
+#     input_bit ^= controller.get_register_bit(tap)
+#   if parameters['modEnabled']:
+#     input_bit ^= controller.clock.get_bit(parameters['modSource'], parameters['modQ'])
+#   if parameters['direction'] == 'left':
+#     controller.shift_register_left(input_bit)
+#   elif parameters['direction'] == 'right':
+#     controller.shift_register_right(input_bit)
 
-def set_lfsr(parameters):
-  controller.clear_operations()
-  controller.set_mode('shift')
-  controller.push(Operation(lfsr,{'controller':controller,'parameters':parameters}))
-  return True
+# def set_lfsr(parameters):
+#   controller.clear_operations()
+#   controller.push(Operation(lfsr,{'controller':controller,'parameters':parameters}))
+#   return True
 
-def strobe(controller):
-  controller.invert_register()
+# def strobe(controller):
+#   controller.invert_register()
 
-def set_strobe():
-  controller.clear_operations()
-  controller.set_mode('strobe')
-  controller.push(Operation(strobe,{'controller':controller}))
-  return True
+# def set_strobe():
+#   controller.clear_operations()
+#   controller.push(Operation(strobe,{'controller':controller}))
+#   return True
 
-def clear_operations():
-  controller.clear_operations()
-  return True
+# def clear_operations():
+#   controller.clear_operations()
+#   return True
 
 #====================================================================================
 
@@ -112,6 +113,7 @@ class MainHandler(RequestHandler):
     result = None
     try:
       body = json.loads(self.request.body.decode('utf-8'))
+      logging.debug(f'Request Body: {repr(body)}' )
       if body['type'] == 'set':
         if body['target'] == 'register':
           result = await IOLoop.current().run_in_executor(
@@ -122,20 +124,26 @@ class MainHandler(RequestHandler):
         elif body['target'] == 'mult_loop_delay':
           result = await IOLoop.current().run_in_executor(
             None,
-            mult_loop_delay,
-            body['parameters']
+            controller.mult_loop_delay,
+            body['parameters']['value']
           )
         elif body['target'] == 'div_loop_delay':
           result = await IOLoop.current().run_in_executor(
             None,
-            div_loop_delay,
-            body['parameters']
+            controller.div_loop_delay,
+            body['parameters']['value']
           )
         elif body['target'] == 'loop_delay':
           result = await IOLoop.current().run_in_executor(
             None,
-            set_loop_delay,
-            body['parameters']
+            controller.set_loop_delay,
+            body['parameters']['value']
+          )
+        elif body['target'] == 'nudge_delay':
+          result = await IOLoop.current().run_in_executor(
+            None,
+            controller.nudge_loop_delay,
+            body['parameters']['value']
           )
         elif body['target'] == 'loop':
           result = await IOLoop.current().run_in_executor(
@@ -146,19 +154,38 @@ class MainHandler(RequestHandler):
         elif body['target'] == 'lfsr':
           result = await IOLoop.current().run_in_executor(
             None,
-            set_lfsr,
+            conroller.set_lfsr_parameters,
             body['parameters']
+          )
+        elif body['target'] == 'lfsr_enabled':
+          result = await IOLoop.current().run_in_executor(
+            None,
+            conroller.set_lfsr_enabled,
+            True
+          )
+        elif body['target'] == 'lfsr_enabled':
+          result = await IOLoop.current().run_in_executor(
+            None,
+            conroller.set_lfsr_enabled,
+            False
           )
         elif body['target'] == 'strobe':
           result = await IOLoop.current().run_in_executor(
             None,
-            set_strobe
+            controller.set_strobe_parameters,
+            body['parameters']
           )
-      elif body['type'] == 'clear':
-        if body['target'] == 'lfsr' or body['target'] == 'strobe':
+        elif body['target'] == 'strobe_enabled':
           result = await IOLoop.current().run_in_executor(
             None,
-            clear_operations
+            controller.set_strobe_enabled,
+            True
+          )
+        elif body['target'] == 'strobe_disabled':
+          result = await IOLoop.current().run_in_executor(
+            None,
+            controller.set_strobe_enabled,
+            False
           )
       if result:
         self.set_status(200)

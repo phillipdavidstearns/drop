@@ -60,10 +60,18 @@ function initControlPanel(){
     setStrobe();
   });
 
-  document.getElementById(`clear-strobe-button`).addEventListener('click', (e) => {
-    clearStrobe();
+  document.getElementById(`strobe-enable`).addEventListener('click', (e) => {
+    console.log(`e.target.checked: ${e.target.checked}`);
+    enableStrobe(e.target.checked);
   });
 
+  document.getElementById('delay-inc-button').addEventListener('click', (e) => {
+    nudgeDelayAmount(parseFloat(document.getElementById('nudge-amount').value)*0.01);
+  });
+
+  document.getElementById('delay-dec-button').addEventListener('click', (e) => {
+    nudgeDelayAmount(-parseFloat(document.getElementById('nudge-amount').value)*0.01);
+  });
 
 }
 
@@ -175,6 +183,22 @@ function stopLoop(){
   updateController(data);
 }
 
+function enableLFSR(){
+  let data = {};
+  data.type='set';
+  data.target='lfsr_enabled';
+  
+  updateController(data);
+}
+
+function enableLFSR(){
+  let data = {};
+  data.type='set';
+  data.target='lfsr_disabled';
+  
+  updateController(data);
+}
+
 function setLFSR(){
   let data = {};
   data.type='set';
@@ -199,18 +223,38 @@ function setLFSR(){
   updateController(data);
 }
 
-function clearLFSR(){
-  let data = {};
-  data.type='clear';
-  data.target='lfsr';
-
-  updateController(data);
-}
-
 function setStrobe(){
   let data = {};
   data.type='set';
   data.target='strobe';
+  data.parameters={
+    'invert_enabled': document.getElementById('strobe-invert-enable').checked,
+    'invert_on': parseInt(document.getElementById('invert-on-count').value),
+    'invert_off': parseInt(document.getElementById('invert-off-count').value),
+    'mute_enabled': document.getElementById('strobe-mute-enable').checked,
+    'mute_on': parseInt(document.getElementById('mute-on-count').value),
+    'mute_off': parseInt(document.getElementById('mute-off-count').value)
+  };
+  updateController(data);
+}
+
+function enableStrobe(value){
+  let data = {};
+  data.type='set';
+  if(value){
+    data.target='strobe_enabled';
+  }else{
+    data.target='strobe_disabled';
+  }
+
+  updateController(data);
+}
+
+function nudgeDelayAmount(value){
+  let data = {};
+  data.type='set';
+  data.target='nudge_delay';
+  data.parameters={'value':value};
 
   updateController(data);
 }
