@@ -245,6 +245,12 @@
                 <div>
                   <label class="form-label" for="loop-delay-range">duration</label> 
                 </div>
+                <div class="px-2">
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="loop-delay-min">min</button>
+                     <button type="button" class="btn btn-sm btn-outline-secondary" id="loop-delay-max">max</button>
+                   </div>
+                </div>
               </div>
             </div>
             <div class="row align-items-center justify-content-center my-2">
@@ -252,14 +258,6 @@
                 <input type="checkbox" class="btn-check" id="run-loop">
                 <label class="btn btn-sm btn-outline-secondary w-100" for="run-loop">run</label>
               </div>
-            </div>
-            <div class="row align-items-center justify-content-center my-2">
-              <div class="col-2 text-center">
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setLoopDelay(0.0)">min</button>
-              </div>
-              <div class="col-2 text-center">
-                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick=" setLoopDelay(1.0)">max</button>
-               </div>
             </div>
             <div class="row my-2 align-items-center justify-content-center">
               <div class="col text-center">
@@ -389,12 +387,12 @@
                   <label class="btn btn-sm btn-outline-secondary" for="stop-ramp">reset</label>
                 </div>
                 <div class="btn-group" role="group">
-                  <input type="checkbox" class="btn-check" id="ramp-up">
+                  <input type="radio" name="ramp-control" class="btn-check" id="ramp-up">
                   <label class="btn btn-sm btn-outline-secondary" for="ramp-up">//</label>
-                  <input type="checkbox" class="btn-check" id="ramp-ping-pong">
+                  <input type="radio" name="ramp-control" class="btn-check" id="ramp-ping-pong">
                   <label class="btn btn-sm btn-outline-secondary" for="ramp-ping-pong">))&lsaquo;&rsaquo;((</label>
-                  <input type="checkbox" class="btn-check" id="ramp-down">
-                  <label class="btn btn-sm btn-outline-secondary" for="ramp-down">\\</label>
+                  <input type="radio" name="ramp-control" class="btn-check" id="ramp-down" checked>
+                  <label class="btn btn-sm btn-outline-secondary" for="ramp-down">--</label>
                 </div>
               </div>
             </div>

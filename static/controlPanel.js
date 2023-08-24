@@ -35,6 +35,19 @@ function initControlPanel(){
     });
   }
 
+  document.getElementById('loop-delay-min').addEventListener('click', (e) =>{
+    let delay_elem = document.getElementById(`loop-delay-value`);
+    delay_elem.value=0.0;
+    delay_elem.dispatchEvent(new Event('input'));
+  });
+
+  document.getElementById('loop-delay-max').addEventListener('click', (e) =>{
+    let delay_elem = document.getElementById(`loop-delay-value`);
+    delay_elem.value=1.0;
+    delay_elem.dispatchEvent(new Event('input'));
+  });
+
+
   document.getElementById(`loop-delay-range`).addEventListener('input', (e) => {
     let delay_elem = document.getElementById(`loop-delay-value`);
     delay_elem.value = e.target.value;
@@ -422,10 +435,14 @@ function rampInterval(interval, increment, steps, step){
     } else if(step >= steps-1){
       range.value = parseFloat(document.getElementById('end-percent').value);
       document.getElementById('stop-ramp').dispatchEvent(new Event('click'));
+      
       if(document.getElementById('ramp-ping-pong').checked){
         swapRampStartEnd();
         document.getElementById('start-ramp').dispatchEvent(new Event('click'));
+      } else if(document.getElementById('ramp-up').checked){
+        document.getElementById('start-ramp').dispatchEvent(new Event('click'));
       }
+
     } else {
       range.value = parseFloat(range.value) + increment;
     }
