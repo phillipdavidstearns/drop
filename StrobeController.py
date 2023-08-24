@@ -9,14 +9,6 @@ This controller coordinates between operations on the register and its output to
 Basic flow:
 
 Strobe Controller > Register State  > CD4094 > CD4098 Mono stable > STROBE
-
-Some of the things I might want to do:
-
-Shift Left (LFSR)
-Shift Right (LFSR)
-Change the feedback taps
-
-
 '''
 
 from threading import Thread, Timer, Lock
@@ -45,6 +37,7 @@ class StrobeController():
     self.delay_max = 1
     self.lfsr_enabled = False
     self.lfsr_parameters = None
+    self.output_enable = True
     self.strobe_enabled = False
     self.strobe_parameters = None
     self.strobe_invert_on_count=0
@@ -96,6 +89,13 @@ class StrobeController():
     new_loop_delay = self.loop_delay * ( percentage + 1.0 )
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
       self.loop_delay = new_loop_delay
+      return self.loop_delay
+    else:
+      return False
+
+  def set_tempo(self, tempo):
+    if tempo <= self.delay_max and tempo >= self.delay_min:
+      self.loop_delay = tempo
       return self.loop_delay
     else:
       return False
@@ -179,10 +179,14 @@ class StrobeController():
 
   def set_strobe_parameters(self, parameters):
     self.strobe_parameters = parameters
+    if self.strobe_parameters['mute_enabled'] == False:
+      self.output_enable = True
     return self.strobe_parameters
 
   def set_strobe_enabled(self, value):
     self.strobe_enabled = value
+    if self.strobe_enabled == False:
+      self.output_enable = True
     return self.strobe_enabled
   
   def strobe(self):
@@ -207,14 +211,14 @@ class StrobeController():
         if self.strobe_mute_off_count < self.strobe_parameters['mute_off']:
             self.strobe_mute_off_count+=1
         elif self.strobe_mute_off_count >= self.strobe_parameters['mute_off']:
-          self.output.enable()
+          self.output_enable = True
           self.strobe_mute_state = True
           self.strobe_mute_on_count=0
       elif self.strobe_mute_state == True:
         if self.strobe_mute_on_count < self.strobe_parameters['mute_on']:
           self.strobe_mute_on_count+=1
         elif self.strobe_mute_on_count >= self.strobe_parameters['mute_on']:
-          self.output.disable()
+          self.output_enable = False
           self.strobe_mute_state = False
           self.strobe_mute_off_count = 0
 
@@ -224,7 +228,13 @@ class StrobeController():
         self.timer = Timer(self.loop_delay, self.loop)
         self.timer.daemon = True
         self.timer.start()
-        self.update()
+
+        if self.output_enable:
+          self.update()
+          self.output.enable()
+        else:
+          self.output.disable()
+          self.update()
 
         if self.lfsr_enabled: self.lfsr()
         if self.strobe_enabled: self.strobe()

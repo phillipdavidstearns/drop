@@ -16,10 +16,26 @@
   <body>
     <main>
       <div class="containter-fluid">
-        <div class="row mx-2 gx-3">
+        <div class="row my-2 align-items-center justify-content-center">
+          <div class="col text-center">
+            <p class="display-5">
+              Drop Control Panel
+            </p>
+          </div>
+        </div>
+        <hr>
+        <div class="row row-cols-1 justify-content-center mx-2 gx-3">
           <!-- Left Column -->
-          <div class="col-6">
+          <div class="col col-lg-6 border border-1 rounded rounded-1">
             <!-- Register Controls -->
+
+            <div class="row my-2 align-items-center justify-content-center">
+              <div class="col text-center">
+                <h1 class="h5">
+                  Register Controls
+                </h1>
+              </div>
+            </div>
 
             <div class="row align-items-center justify-content-center my-2" id="register-controls">
               <div class="col text-center">
@@ -51,119 +67,131 @@
                   <input class="form-check-input" type="checkbox" value="" id="register-bit-7">
                 </div>
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="register-set-button">set</button>
-                <input type="checkbox" class="btn-check" id="register-update">
-                <label class="btn btn-sm btn-outline-secondary" for="register-update">instant</label>
               </div>
             </div>
             <hr>
-            <div class="row" id="lfrs-controls">
-              <table class="table table-borderless px-2">
-                <tbody>
-                  <tr>
-                    <td>Tap 1:</td>
-                    <td>
-                      <div class="form-check-inline m-auto">
-                        <input class="form-check-input" type="checkbox" value="" id="tap-1-enable">
-                        <label class="form-check-label" for="tap-1-enable">enable</label>
-                      </div>
-                    </td>
-                    <td>
-                      <input class="form-number" type="number" id="tap-1-value" min="0" max="7" value="0" step="1">
-                      <label class="form-check-label" for="tap-1-value">Q</label>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="tap-1-randomize-button">randomize</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Tap 2:</td>
-                    <td>
-                      <div class="form-check-inline m-auto">
-                        <input class="form-check-input" type="checkbox" value="" id="tap-2-enable">
-                        <label class="form-check-label" for="tap-2-enable">enable</label>
-                      </div>
-                    </td>
-                    <td>
-                      <input class="form-number" type="number" id="tap-2-value" min="0" max="7" value="0" step="1">
-                      <label class="form-check-label" for="tap-2-value">Q</label>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="tap-2-randomize-button">randomize</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Tap 3:</td>
-                    <td>
-                      <div class="form-check-inline m-auto">
-                        <input class="form-check-input" type="checkbox" value="" id="tap-3-enable">
-                        <label class="form-check-label" for="tap-3-enable">enable</label>
-                      </div>
-                    </td>
-                    <td>
-                      <input class="form-number" type="number" id="tap-3-value" min="0" max="7" value="0" step="1">
-                      <label class="form-check-label" for="tap-3-value">Q</label>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="tap-3-randomize-button">randomize</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Mod 1:</td>
-                    <td>
-                      <div class="form-check-inline m-auto">
-                        <input class="form-check-input" type="checkbox" value="" id="mod-enable">
-                        <label class="form-check-label" for="mod-enable">enable</label>
-                      </div>
-                    </td>
-                    <td class="row">
-                      <div class="col">
-                        <select class="form-select" id="mod-source-select">
-                          <option value="0" selected>/1</option>
-                          <option value="1">/3</option>
-                          <option value="2">/5</option>
-                          <option value="3">/7</option>
-                          <option value="4">/9</option>
-                          <option value="5">/11</option>
-                          <option value="6">/13</option>
+            <div class="row my-2 align-items-center justify-content-center">
+              <div class="col text-center">
+                <h1 class="h5">
+                  LFSR Controls
+                </h1>
+              </div>
+            </div>
+            <div class="row my-2 align-items-center justify-content-center" id="lfrs-controls">
+              <div class="col">
+                <table class="table table-borderless mb-2">
+                  <tbody>
+                    <tr>
+                      <td>Tap 1:</td>
+                      <td>
+                        <div class="form-check-inline m-auto">
+                          <input class="form-check-input" type="checkbox" value="" id="tap-1-enable">
+                          <label class="form-check-label" for="tap-1-enable">enable</label>
+                        </div>
+                      </td>
+                      <td>
+                        <input class="form-number" type="number" id="tap-1-value" min="0" max="7" value="0" step="1">
+                        <label class="form-check-label" for="tap-1-value">Q</label>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="tap-1-randomize-button">randomize</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Tap 2:</td>
+                      <td>
+                        <div class="form-check-inline m-auto">
+                          <input class="form-check-input" type="checkbox" value="" id="tap-2-enable">
+                          <label class="form-check-label" for="tap-2-enable">enable</label>
+                        </div>
+                      </td>
+                      <td>
+                        <input class="form-number" type="number" id="tap-2-value" min="0" max="7" value="0" step="1">
+                        <label class="form-check-label" for="tap-2-value">Q</label>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="tap-2-randomize-button">randomize</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Tap 3:</td>
+                      <td>
+                        <div class="form-check-inline m-auto">
+                          <input class="form-check-input" type="checkbox" value="" id="tap-3-enable">
+                          <label class="form-check-label" for="tap-3-enable">enable</label>
+                        </div>
+                      </td>
+                      <td>
+                        <input class="form-number" type="number" id="tap-3-value" min="0" max="7" value="0" step="1">
+                        <label class="form-check-label" for="tap-3-value">Q</label>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="tap-3-randomize-button">randomize</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Mod 1:</td>
+                      <td>
+                        <div class="form-check-inline m-auto">
+                          <input class="form-check-input" type="checkbox" value="" id="mod-enable">
+                          <label class="form-check-label" for="mod-enable">enable</label>
+                        </div>
+                      </td>
+                      <td class="row">
+                        <div class="col">
+                          <select class="form-select" id="mod-source-select">
+                            <option value="0" selected>/1</option>
+                            <option value="1">/3</option>
+                            <option value="2">/5</option>
+                            <option value="3">/7</option>
+                            <option value="4">/9</option>
+                            <option value="5">/11</option>
+                            <option value="6">/13</option>
+                          </select>
+                        </div>
+                        <div class="col">
+                          <input class="form-number" type="number" id="mod-value" min="0" max="31" value="0" step="1">
+                          <label class="form-check-label" for="mod-value">Q</label>
+                        </div>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="mod-randomize-button">randomize</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <select class="form-select" id="direction-select">
+                          <option value="left" selected>left</option>
+                          <option value="right">right</option>
                         </select>
-                      </div>
-                      <div class="col">
-                        <input class="form-number" type="number" id="mod-value" min="0" max="31" value="0" step="1">
-                        <label class="form-check-label" for="mod-value">Q</label>
-                      </div>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="mod-randomize-button">randomize</button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <select class="form-select" id="direction-select">
-                        <option value="left" selected>left</option>
-                        <option value="right">right</option>
-                      </select>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="flip-lfsr-button">flip</button>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="set-lfsr-button">set lfsr</button>
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-lfsr-button">clear lfsr</button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="flip-lfsr-button">flip</button>
+                      </td>
+                      <td>
+                        <input type="checkbox" class="btn-check" id="lfsr-enable">
+                        <label class="btn btn-sm btn-outline-secondary" for="lfsr-enable">enable</label>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
             <hr>
+            <div class="row my-2 align-items-center justify-content-center">
+              <div class="col text-center">
+                <h1 class="h5">
+                  Strobe Controls
+                </h1>
+              </div>
+            </div>
             <div class="row align-items-center justify-content-center my-2">
               <div class="col-3 text-center">
-                <input type="number" class="form-number w-50" id="invert-on-count" min="1" max="64" step="1" value="1">
+                <input type="number" class="form-number w-50" id="invert-on-count" min="0" max="16" step="1" value="0">
                 <label class="form-label" for="invert-on-count">ON</label>
               </div>
               <div class="col-3 text-center">
-                <input type="number" class="form-number w-50" id="invert-off-count" min="1" max="64" step="1" value="1">
+                <input type="number" class="form-number w-50" id="invert-off-count" min="0" max="16" step="1" value="0">
                 <label class="form-label" for="invert-off-count">OFF</label>
               </div>
               <div class="col-3 text-center">
@@ -173,11 +201,11 @@
             </div>
             <div class="row align-items-center justify-content-center my-2">
               <div class="col-3 text-center">
-                <input type="number" class="form-number w-50" id="mute-on-count" min="1" max="64" step="1" value="1">
+                <input type="number" class="form-number w-50" id="mute-on-count" min="0" max="16" step="1" value="0">
                 <label class="form-label" for="mute-on-count">ON</label>
               </div>
               <div class="col-3 text-center">
-                <input type="number" class="form-number w-50" id="mute-off-count" min="1" max="64" step="1" value="1">
+                <input type="number" class="form-number w-50" id="mute-off-count" min="0" max="16" step="1" value="0">
                 <label class="form-label" for="mute-off-count">OFF</label>
               </div>
               <div class="col-3 text-center">
@@ -185,9 +213,13 @@
                 <label class="btn btn-sm btn-outline-secondary" for="strobe-mute-enable">mute</label>
               </div>
             </div>
-            <div class="row align-items-center justify-content-center my-2">
+            <div class="row align-items-center justify-content-center mt-2 mb-4">
               <div class="col text-center">
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="set-strobe-button">update strobe</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="set-strobe-button">update</button>
+              </div>
+              <div class="col text-center">
+                <input type="checkbox" class="btn-check" id="strobe-live">
+                <label class="btn btn-sm btn-outline-secondary" for="strobe-live">live</label>
               </div>
               <div class="col text-center">
                 <input type="checkbox" class="btn-check" id="strobe-enable">
@@ -196,36 +228,42 @@
             </div>
           </div>
           <!-- Timing controls -->
-          <div class="col-6">
-            <div class="row text-center">
-              <div class="col-9">
-                <input type="range" class="form-range" id="loop-delay-range" min="0.0" max="1.0" step=".01" value="1.0">
-              </div>
-              <div class="col-3 text-start">
-                <label class="form-label" for="loop-delay-range">duration</label> 
+          <div class="col col-lg-6 border border-1 rounded rounded-1">
+            <div class="row my-2 align-items-center justify-content-center">
+              <div class="col text-center">
+                <h1 class="h5">
+                  Timing Controls
+                </h1>
               </div>
             </div>
-            <div class="row align-items-center justify-content-center mt-2">
-              <div class="col-2 text-center">
-                <input type="radio" class="btn-check" name="loop-radio" id="start-loop">
-                <label class="btn btn-sm btn-outline-secondary" for="start-loop">start</label>
-              </div>
-              <div class="col-2 text-center">
-                <input type="radio" class="btn-check" name="loop-radio" id="stop-loop">
-                <label class="btn btn-sm btn-outline-secondary" for="stop-loop">stop</label>
+            <div class="row my-2 align-items-center justify-content-center">
+              <div class="col d-flex col-md-12 col-xl-10 justify-content-between">
+                <div class="col px-2">
+                  <input type="range" class="form-range" id="loop-delay-range" min="0.0" max="1.0" step="0.01" value="1.0">
+                  <input id="loop-delay-value" value="1.0" hidden>
+                </div>
+                <div>
+                  <label class="form-label" for="loop-delay-range">duration</label> 
+                </div>
               </div>
             </div>
             <div class="row align-items-center justify-content-center my-2">
-                <div class="col-2 text-center">
-                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setLoopDelay(0.0)">min</button>
-                </div>
-                <div class="col-2 text-center">
-                   <button type="button" class="btn btn-sm btn-outline-secondary" onclick=" setLoopDelay(1.0)">max</button>
-                 </div>
+              <div class="col-2 text-center">
+                <input type="checkbox" class="btn-check" id="run-loop">
+                <label class="btn btn-sm btn-outline-secondary w-100" for="run-loop">run</label>
               </div>
-            <div class="row text-center">
-              <div class="col">
-                <table class="table table-borderless align-middle">
+            </div>
+            <div class="row align-items-center justify-content-center my-2">
+              <div class="col-2 text-center">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setLoopDelay(0.0)">min</button>
+              </div>
+              <div class="col-2 text-center">
+                 <button type="button" class="btn btn-sm btn-outline-secondary" onclick=" setLoopDelay(1.0)">max</button>
+               </div>
+            </div>
+            <div class="row my-2 align-items-center justify-content-center">
+              <div class="col text-center">
+                <table class="table table-borderless align-middle text-center my-0">
                   <tbody>
                     <tr>
                       <td>
@@ -283,7 +321,7 @@
                 </table>
               </div>
             </div>
-            <div class="row row align-items-center justify-content-center">
+            <div class="row align-items-center justify-content-center mt-2 mb-4">
               <div class="col-3 text-center">
                 <input type="number" class="form-number w-75" id="nudge-amount" min="0" max="100" step="0.1" value="0.0">
                 <label class="form-label" for="percent">%</label>
@@ -291,6 +329,73 @@
               <div class="col-3 btn-group" role="group">
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="delay-inc-button">inc</button>
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="delay-dec-button">dec</button>
+              </div>
+            </div>
+            <div class="row align-items-center justify-content-center mt-2 mb-4">
+              <div class="col d-flex col-md-10 col-xl-8 justify-content-between">
+                <div>
+                  <input type="number" class="form-number" id="tempo-base" min="60" max="200" step="1" value="160" onchange="setTempo(1)">
+                  <label class="form-label" for="percent">BPM</label>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setTempo(1)">1/4</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setTempo(1/2)">1/8</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setTempo(1/3)">1/8T</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setTempo(1/4)">1/16</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setTempo(1/8)">1/32</button>
+              </div>
+            </div>
+
+            <!-- Ramp Controlls -->
+            <div class="row align-items-center justify-content-center my-2">
+              <div class="col d-flex col-md-12 col-xl-10 justify-content-between">
+                  <div class="col px-2">
+                    <input type="range" class="form-range" id="start-percent-range" min="0.0" max="1.0" step="0.01" value="1.0">
+                  </div>
+                  <div>
+                  <input type="number" class="form-number" id="start-percent" min="0.0" max="1.0" step="0.01" value="1.0">
+                  <label class="form-label" for="start-percent">start</label>
+                </div>
+              </div>
+            </div>
+            <div class="row align-items-center justify-content-center my-2">
+              <div class="col d-flex col-md-12 col-xl-10 justify-content-between">
+                <div class="col px-2">
+                  <input type="range" class="form-range" id="end-percent-range" min="0.0" max="1.0" step="0.01" value="0.0">
+                </div>
+                <div>
+                  <input type="number" class="form-number" id="end-percent" min="0.0" max="1.0" step="0.01" value="0.0">
+                  <label class="form-label" for="end-percent">end</label>
+                </div>
+              </div>
+            </div>
+            <div class="row align-items-center justify-content-center my-2">
+              <div class="col d-flex col-md-12 col-xl-10 justify-content-between">
+                <div class="col px-2">
+                  <input type="range" class="form-range" id="ramp-duration-range" min="0.25" max="360" step="0.1" value="300">
+                </div>
+                <div>
+                  <input type="number" class="form-number" id="ramp-duration" min="0.25" max="360" step="0.1" value="300">
+                  <label class="form-label" for="ramp-duration">seconds</label>
+                </div>
+              </div>
+            </div>
+            <div class="row align-items-center justify-content-center mt-2 mb-4">
+              <div class="col d-flex col-md-12 col-xl-10 justify-content-between">
+                  <button type="button" class="btn btn-sm btn-outline-secondary" onclick="swapRampStartEnd()">swap</button>
+                <div class="btn-group" role="group">
+                  <input type="radio" class="btn-check" name="ramp-radio" id="start-ramp">
+                  <label class="btn btn-sm btn-outline-secondary" for="start-ramp">start</label>
+                  <input type="radio" class="btn-check" name="ramp-radio" id="stop-ramp">
+                  <label class="btn btn-sm btn-outline-secondary" for="stop-ramp">reset</label>
+                </div>
+                <div class="btn-group" role="group">
+                  <input type="checkbox" class="btn-check" id="ramp-up">
+                  <label class="btn btn-sm btn-outline-secondary" for="ramp-up">//</label>
+                  <input type="checkbox" class="btn-check" id="ramp-ping-pong">
+                  <label class="btn btn-sm btn-outline-secondary" for="ramp-ping-pong">))&lsaquo;&rsaquo;((</label>
+                  <input type="checkbox" class="btn-check" id="ramp-down">
+                  <label class="btn btn-sm btn-outline-secondary" for="ramp-down">\\</label>
+                </div>
               </div>
             </div>
           </div>

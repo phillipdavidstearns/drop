@@ -37,29 +37,7 @@ def signalHandler(signum, frame, controller):
     sys.exit()
 
 #====================================================================================
-# Functions for direct control
-
-def set_register(parameters):
-  controller.set_register_state(parameters['state'])
-  if parameters['update']:
-    controller.update()
-    return True
-  elif parameters['update'] == False:
-    return True
-  else:
-    return False
-
-# def set_loop_delay(parameters):
-#   return controller.set_delay(parameters['value'])
-
-# def nudge_loop_delay(parameters):
-#   return controller.nudge_loop_delay(parameters['value'])
-
-# def mult_loop_delay(parameters):
-#   return controller.mult_loop_delay(parameters['value'])
-
-# def div_loop_delay(parameters):
-#   return controller.div_loop_delay(parameters['value'])
+# Helper functions for direct control
 
 def set_loop_retrigger(parameters):
   if parameters['retrigger'] == True:
@@ -68,37 +46,6 @@ def set_loop_retrigger(parameters):
     return controller.stop_loop()
   else:
     return False
-
-#====================================================================================
-# Functions for Operations
-
-# def lfsr(controller, parameters):
-#   input_bit = 0
-#   for tap in parameters['taps']:
-#     input_bit ^= controller.get_register_bit(tap)
-#   if parameters['modEnabled']:
-#     input_bit ^= controller.clock.get_bit(parameters['modSource'], parameters['modQ'])
-#   if parameters['direction'] == 'left':
-#     controller.shift_register_left(input_bit)
-#   elif parameters['direction'] == 'right':
-#     controller.shift_register_right(input_bit)
-
-# def set_lfsr(parameters):
-#   controller.clear_operations()
-#   controller.push(Operation(lfsr,{'controller':controller,'parameters':parameters}))
-#   return True
-
-# def strobe(controller):
-#   controller.invert_register()
-
-# def set_strobe():
-#   controller.clear_operations()
-#   controller.push(Operation(strobe,{'controller':controller}))
-#   return True
-
-# def clear_operations():
-#   controller.clear_operations()
-#   return True
 
 #====================================================================================
 
@@ -113,13 +60,18 @@ class MainHandler(RequestHandler):
     result = None
     try:
       body = json.loads(self.request.body.decode('utf-8'))
-      logging.debug(f'Request Body: {repr(body)}' )
       if body['type'] == 'set':
         if body['target'] == 'register':
           result = await IOLoop.current().run_in_executor(
             None,
-            set_register,
-            body['parameters']
+            controller.set_register_state,
+            body['parameters']['state']
+          )
+        elif body['target'] == 'tempo':
+          result = await IOLoop.current().run_in_executor(
+            None,
+            controller.set_tempo,
+            body['parameters']['value']
           )
         elif body['target'] == 'mult_loop_delay':
           result = await IOLoop.current().run_in_executor(
@@ -154,19 +106,19 @@ class MainHandler(RequestHandler):
         elif body['target'] == 'lfsr':
           result = await IOLoop.current().run_in_executor(
             None,
-            conroller.set_lfsr_parameters,
+            controller.set_lfsr_parameters,
             body['parameters']
           )
         elif body['target'] == 'lfsr_enabled':
           result = await IOLoop.current().run_in_executor(
             None,
-            conroller.set_lfsr_enabled,
+            controller.set_lfsr_enabled,
             True
           )
-        elif body['target'] == 'lfsr_enabled':
+        elif body['target'] == 'lfsr_disabled':
           result = await IOLoop.current().run_in_executor(
             None,
-            conroller.set_lfsr_enabled,
+            controller.set_lfsr_enabled,
             False
           )
         elif body['target'] == 'strobe':

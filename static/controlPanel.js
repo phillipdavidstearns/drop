@@ -10,7 +10,6 @@ var hostname;
 
 function initControlPanel(){
 
-  // reset button listener
   document.getElementById(`register-reset-button`).addEventListener('click', (e) => {
     resetRegisterControls();
     setRegister();
@@ -30,25 +29,33 @@ function initControlPanel(){
     setRegister();
   });
 
+  for(let i = 0; i < 8; i++){
+    document.getElementById(`register-bit-${i}`).addEventListener('change',(e) => {
+      setRegister();
+    });
+  }
+
   document.getElementById(`loop-delay-range`).addEventListener('input', (e) => {
-    console.log(`setLoopDelay: ${parseFloat(e.target.value)}`);
+    let delay_elem = document.getElementById(`loop-delay-value`);
+    delay_elem.value = e.target.value;
+    delay_elem.dispatchEvent(new Event('input'));
+  });
+
+  document.getElementById(`loop-delay-value`).addEventListener('input', (e) =>{
+    document.getElementById(`loop-delay-range`).value = e.target.value;
     setLoopDelay(parseFloat(e.target.value));
   });
 
-  document.getElementById(`start-loop`).addEventListener('click', (e) => {
-    startLoop();
+  document.getElementById(`run-loop`).addEventListener('change', (e) => {
+    if(e.target.checked){
+      startLoop();
+    } else {
+      stopLoop();
+    }
   });
 
-  document.getElementById(`stop-loop`).addEventListener('click', (e) => {
-    stopLoop();
-  });
-
-  document.getElementById(`set-lfsr-button`).addEventListener('click', (e) => {
-    setLFSR();
-  });
-
-  document.getElementById(`clear-lfsr-button`).addEventListener('click', (e) => {
-    clearLFSR();
+  document.getElementById(`lfsr-enable`).addEventListener('click', (e) => {
+    enableLFSR(e.target.checked);
   });
 
   document.getElementById(`flip-lfsr-button`).addEventListener('click', (e) => {
@@ -60,8 +67,44 @@ function initControlPanel(){
     setStrobe();
   });
 
+  document.getElementById(`strobe-live`).addEventListener('change', (e) => {
+    if(e.target.checked){
+      document.getElementById(`set-strobe-button`).disabled=true;
+    } else {
+      document.getElementById(`set-strobe-button`).disabled=false;
+    }
+  });
+
+  document.getElementById('invert-on-count').addEventListener('change', (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      setStrobe();
+    }
+  });
+  document.getElementById('invert-off-count').addEventListener('change', (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      setStrobe();
+    }
+  });
+  document.getElementById('mute-on-count').addEventListener('change', (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      setStrobe();
+    }
+  });
+  document.getElementById('mute-off-count').addEventListener('change', (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      setStrobe();
+    }
+  });
+
+  document.getElementById('strobe-invert-enable').addEventListener('change', (e) => {
+    setStrobe();
+  });
+
+  document.getElementById('strobe-mute-enable').addEventListener('change', (e) => {
+    setStrobe();
+  });
+
   document.getElementById(`strobe-enable`).addEventListener('click', (e) => {
-    console.log(`e.target.checked: ${e.target.checked}`);
     enableStrobe(e.target.checked);
   });
 
@@ -73,6 +116,77 @@ function initControlPanel(){
     nudgeDelayAmount(-parseFloat(document.getElementById('nudge-amount').value)*0.01);
   });
 
+  //configures the refreshing of the LFSR settings in real-time
+  for(let i = 1; i <= 3; i++){
+    document.getElementById(`tap-${i}-enable`).addEventListener('change', (e) => {
+      setLFSR();
+    });
+    document.getElementById(`tap-${i}-value`).addEventListener('change', (e) => {
+      let en = document.getElementById(`tap-${i}-enable`);
+      if(en.checked){
+        setLFSR();
+      }
+    });
+    document.getElementById(`tap-${i}-randomize-button`).addEventListener('click', (e) => {
+      let q = document.getElementById(`tap-${i}-value`);
+      q.value = Math.floor(8 * Math.random());
+      q.dispatchEvent(new Event('change'));
+    });
+  }
+  document.getElementById('mod-enable').addEventListener('change', (e) => {
+    setLFSR();
+  });
+  document.getElementById('mod-source-select').addEventListener('change', (e) => {
+    if(document.getElementById('mod-enable').checked){
+      setLFSR();
+    }
+  });
+  document.getElementById('mod-value').addEventListener('change', (e) => {
+    if(document.getElementById('mod-enable').checked){
+      setLFSR();
+    }
+  });
+  document.getElementById(`mod-randomize-button`).addEventListener('click', (e) => {
+    let q = document.getElementById(`mod-value`);
+    q.value = Math.floor(8 * Math.random());
+    let sel = document.getElementById(`mod-source-select`);
+    sel.options.selectedIndex = Math.floor(7 * Math.random());
+    if(document.getElementById('mod-enable').checked){
+      setLFSR();
+    }
+  });
+
+  document.getElementById('start-ramp').addEventListener('click', (e) => {
+    e.target.disabled = true;
+    document.getElementById('stop-ramp').disabled=false;
+    startRamp();
+  });
+
+  document.getElementById('stop-ramp').addEventListener('click', (e) => {
+    e.target.disabled = true;
+    document.getElementById('start-ramp').disabled=false;
+  });
+
+  document.getElementById('start-percent-range').addEventListener('input', (e) =>{
+    document.getElementById('start-percent').value = e.target.value;
+  });
+  document.getElementById('start-percent').addEventListener('input', (e) =>{
+    document.getElementById('start-percent-range').value = e.target.value;
+  });
+
+  document.getElementById('end-percent-range').addEventListener('input', (e) =>{
+    document.getElementById('end-percent').value = e.target.value;
+  });
+  document.getElementById('end-percent').addEventListener('input', (e) => {
+    document.getElementById('end-percent-range').value = e.target.value;
+  });
+
+  document.getElementById('ramp-duration').addEventListener('input', (e) => {
+    document.getElementById('ramp-duration-range').value = e.target.value;
+  });
+  document.getElementById('ramp-duration-range').addEventListener('input', (e) => {
+    document.getElementById('ramp-duration').value = e.target.value;
+  });
 }
 
 function resetRegisterControls(){
@@ -98,8 +212,7 @@ function setRegister() {
   data.type='set';
   data.target='register';
   data.parameters={
-    'state':[],
-    'update': document.getElementById(`register-update`).checked
+    'state':[]
   };
 
   for(let i=0;i<8;i++){
@@ -123,9 +236,10 @@ function updateController(data){
   })
   .then((result) => {
     if(result){
-      console.log(result);
+      // console.log(result);
     }
-  });
+  })
+  .catch((error) => console.error(error));
 }
 
 function setLoopDelay(delay){
@@ -183,18 +297,14 @@ function stopLoop(){
   updateController(data);
 }
 
-function enableLFSR(){
+function enableLFSR(value){
   let data = {};
   data.type='set';
-  data.target='lfsr_enabled';
-  
-  updateController(data);
-}
-
-function enableLFSR(){
-  let data = {};
-  data.type='set';
-  data.target='lfsr_disabled';
+  if(value){
+    data.target='lfsr_enabled';
+  }else{
+    data.target='lfsr_disabled';
+  }
   
   updateController(data);
 }
@@ -219,7 +329,7 @@ function setLFSR(){
   data.parameters.direction = directions[directions.selectedIndex].value;
   const sources = document.getElementById('mod-source-select').options
   data.parameters.modSource = parseInt(sources[sources.selectedIndex].value);
-  console.log(data);
+
   updateController(data);
 }
 
@@ -259,10 +369,14 @@ function nudgeDelayAmount(value){
   updateController(data);
 }
 
-function clearStrobe(){
+function setTempo(value){
+  let tempo = parseFloat(document.getElementById('tempo-base').value);
   let data = {};
-  data.type='clear';
-  data.target='strobe';
+  data.type='set';
+  data.target='tempo';
+  data.parameters={
+    'value': value * ( 60 / tempo )
+  };
 
   updateController(data);
 }
@@ -275,5 +389,48 @@ function flipDirection() {
   } else {
     options[1].selected=false;
     options[0].selected=true;
+  }
+}
+
+function startRamp(){
+  let end = parseFloat(document.getElementById('end-percent').value);
+  let start = parseFloat(document.getElementById('start-percent').value);
+  let duration = parseFloat(document.getElementById('ramp-duration').value);
+  let steps = Math.floor(20 * duration);
+  let interval = 1000 * duration / steps;
+  let increment = ( end - start ) / steps;
+  let step = 0;
+  rampInterval(interval, increment, steps, step);
+}
+
+function swapRampStartEnd(){
+  let end_elem = document.getElementById('end-percent');
+  let start_elem = document.getElementById('start-percent');
+  let end = parseFloat(end_elem.value);
+  let start = parseFloat(start_elem.value);
+  end_elem.value=start;
+  start_elem.value=end;
+  end_elem.dispatchEvent(new Event('input'));
+  start_elem.dispatchEvent(new Event('input'));
+}
+
+function rampInterval(interval, increment, steps, step){
+  if(document.getElementById('start-ramp').checked && step < steps){
+    let range = document.getElementById(`loop-delay-value`);
+    if(step == 0){
+      range.value = parseFloat(document.getElementById('start-percent').value);
+    } else if(step >= steps-1){
+      range.value = parseFloat(document.getElementById('end-percent').value);
+      document.getElementById('stop-ramp').dispatchEvent(new Event('click'));
+      if(document.getElementById('ramp-ping-pong').checked){
+        swapRampStartEnd();
+        document.getElementById('start-ramp').dispatchEvent(new Event('click'));
+      }
+    } else {
+      range.value = parseFloat(range.value) + increment;
+    }
+    range.dispatchEvent(new Event('input'));
+    step++;
+    setTimeout(rampInterval, interval, interval, increment, steps, step);
   }
 }
