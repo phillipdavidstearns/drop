@@ -85,6 +85,12 @@ class StrobeController():
     self.loop_delay = delay
     return self.loop_delay
 
+  def get_delay_percentage(self):
+    percentage = {
+     'delay_percentage' : (self.loop_delay -  self.delay_min) / (self.delay_max - self.delay_min)
+    }
+    return percentage
+
   def nudge_loop_delay(self, percentage):
     new_loop_delay = self.loop_delay * ( percentage + 1.0 )
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:

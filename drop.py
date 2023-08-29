@@ -60,7 +60,13 @@ class MainHandler(RequestHandler):
     result = None
     try:
       body = json.loads(self.request.body.decode('utf-8'))
-      if body['type'] == 'set':
+      if body['type'] == 'get':
+        if body['target'] == 'delay_percentage':
+          result = await IOLoop.current().run_in_executor(
+            None,
+            controller.get_delay_percentage
+          )
+      elif body['type'] == 'set':
         if body['target'] == 'register':
           result = await IOLoop.current().run_in_executor(
             None,

@@ -200,6 +200,33 @@ function initControlPanel(){
   document.getElementById('ramp-duration-range').addEventListener('input', (e) => {
     document.getElementById('ramp-duration').value = e.target.value;
   });
+
+  //experimental: get current percentage and apply to widgets
+  document.getElementById('loop-current').addEventListener('click', async (e) => {
+    var result = await getCurrentPercentage();
+    var elem = document.getElementById('loop-delay-range');
+    elem.value=result.result.delay_percentage;
+  });
+  document.getElementById('ramp-start-current').addEventListener('click', async (e) => {
+    var result = await getCurrentPercentage();
+    var elem = document.getElementById('start-percent-range');
+    elem.value=result.result.delay_percentage;
+    elem.dispatchEvent(new Event('input'));
+  });
+  document.getElementById('ramp-end-current').addEventListener('click', async (e) => {
+    var result = await getCurrentPercentage();
+    var elem = document.getElementById('end-percent-range');
+    elem.value=result.result.delay_percentage;
+    elem.dispatchEvent(new Event('input'));
+  });
+}
+
+async function getCurrentPercentage(){
+  let data = {};
+  data.type='get';
+  data.target='delay_percentage';
+  const value = await updateController(data);
+  return value;
 }
 
 function resetRegisterControls(){
@@ -235,24 +262,20 @@ function setRegister() {
   updateController(data);
 }
 
-function updateController(data){
-  fetch(`http://${hostname}.local`, {
-    method:'POST',
-    body:JSON.stringify(data)
-  })
-  .then((response) => {
+async function updateController(data){
+  try{
+    const response = await fetch(`http://${hostname}.local`, {
+      method:'POST',
+      body:JSON.stringify(data)
+    })
     if(response.ok){
       return response.json();
     } else {
       return null
     }
-  })
-  .then((result) => {
-    if(result){
-      // console.log(result);
-    }
-  })
-  .catch((error) => console.error(error));
+  } catch(error){
+    console.error(error);
+  }
 }
 
 function setLoopDelay(delay){
