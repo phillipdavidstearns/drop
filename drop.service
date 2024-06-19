@@ -5,7 +5,7 @@ Wants=pigpiod.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /usr/local/src/drop/drop.py
+ExecStart=/usr/local/src/drop/.venv/bin/python3 /usr/local/src/drop/drop.py
 Restart=on-success
 RestartPreventExitStatus=SIGTERM SIGKILL
 RestartSec=5

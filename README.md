@@ -18,6 +18,32 @@ A multi-part system built for the Raspberry Pi, to control modified strobe light
 1. Chaney Electronics Strobe Light Kit
 1. Custom circuit to allow for +5v pulse triggering of the strobe
 
+#### IGBT Resources:
+
+* [The Insulated Gate Bipolar Transistor (IGBT): A Practical Guide](https://www.build-electronic-circuits.com/igbt-insulated-gate-bipolar-transistor/)
+* [IGBT Tutorial](https://www.microchip.com/content/dam/mchp/documents/PSDS/ApplicationNotes/ApplicationNotes/APT0201.pdf)
+* [IGBT-basic know-how
+IGBT: how does an Insulated Gate Bipolar Transistor work?](https://www.infineon.com/dgdl/Infineon-IGBT_basics_how_does_an_IGBT_work-AdditionalTechnicalInformation-v01_00-EN.pdf?fileId=5546d462700c0ae60170675ed665777f&da=t)
+* [IGBT Application Note](https://www.renesas.com/us/en/document/apn/igbt-application-note)
+
+Parts:
+
+* [https://www.mouser.com/datasheet/2/698/REN_r07ds0750ej0100_rjp5001app_DST_20120426-1999273.pdf](https://www.mouser.com/datasheet/2/698/REN_r07ds0750ej0100_rjp5001app_DST_20120426-1999273.pdf)
+
+#### Strobe Circuits:
+
+* [DIY IGBT CONTROLLED 1000WS FLASH UNIT](https://madengineer.ch/blog/2015/08/01/diy-igbt-controlled-1000ws-flash-unit/)
+* [FORUM POST: familiar with IGBT? how to use it in a strobe flash circuit?](https://forum.allaboutcircuits.com/threads/familiar-with-igbt-how-to-use-it-in-a-strobe-flash-circuit.5000/)
+* [Xenon Strobe Light](https://sound-au.com/project65.htm) - Uses SCR but maybe could be modifed to use IGBT
+* [Xenon Strobe Light Control Circuit(s)](https://www.homemade-circuits.com/xenon-strobe-light-control-circuit/)
+
+#### Filtering Trigger Pulses to Thumps:
+
+* [Designing a simple analog kick drum from scratch](https://www.youtube.com/watch?v=yz37Yz315eU)
+* [Bridged T Oscillator for Percussion Sounds](https://www.youtube.com/watch?v=C122iDdtnww)
+* [Bridged T Electronic Drum Circuit Again](https://www.youtube.com/watch?v=H_ULyfDKN8k)
+* [Bridged T Peak Filter - LTSpice Simulation and Audio Tryout](https://www.youtube.com/watch?v=YnnWWfptilM)
+
 ## Setup
 
 ### Prepare an SD card for the Raspberry Pi using Raspberry Pi Imager
@@ -28,7 +54,7 @@ A multi-part system built for the Raspberry Pi, to control modified strobe light
 ### Install Software
 
 1. `sudo apt-get update`
-1. `sudo apt-get install -y git python3-pip pigpio python3-pigpio tornado`
+1. `sudo apt-get install -y git python3-pip pigpio python3-pigpio tornado python3-decouple`
 1. Navigate to the install directory `cd /usr/local/src`
 1. `sudo git clone https://github.com/phillipdavidstearns/drop.git`
 1. `sudo git clone https://github.com/phillipdavidstearns/rpi-cd4094.git`

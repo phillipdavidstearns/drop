@@ -10,30 +10,34 @@ var hostname;
 
 function initControlPanel(){
 
-  document.getElementById(`register-reset-button`).addEventListener('click', (e) => {
+  //Register Controls
+
+  document.getElementById(`register-reset-button`).addEventListener('click', async (e) => {
     resetRegisterControls();
-    setRegister();
+    await setRegister();
   });
 
-  document.getElementById(`register-invert-button`).addEventListener('click', (e) => {
+  document.getElementById(`register-invert-button`).addEventListener('click', async (e) => {
     invertRegisterControls();
-    setRegister();
+    await setRegister();
   });
 
-  document.getElementById(`register-randomize-button`).addEventListener('click', (e) => {
+  document.getElementById(`register-randomize-button`).addEventListener('click', async (e) => {
     randomizeRegisterControls();
-    setRegister();
+    await setRegister();
   });
 
-  document.getElementById(`register-set-button`).addEventListener('click', (e) => {
-    setRegister();
+  document.getElementById(`register-set-button`).addEventListener('click', async (e) => {
+    await setRegister();
   });
 
   for(let i = 0; i < 8; i++){
-    document.getElementById(`register-bit-${i}`).addEventListener('change',(e) => {
-      setRegister();
+    document.getElementById(`register-bit-${i}`).addEventListener('change', async (e) => {
+      await setRegister();
     });
   }
+
+  // Loop timing controls
 
   document.getElementById('loop-delay-min').addEventListener('click', (e) =>{
     let delay_elem = document.getElementById(`loop-delay-value`);
@@ -54,90 +58,44 @@ function initControlPanel(){
     delay_elem.dispatchEvent(new Event('input'));
   });
 
-  document.getElementById(`loop-delay-value`).addEventListener('input', (e) =>{
-    document.getElementById(`loop-delay-range`).value = e.target.value;
-    setLoopDelay(parseFloat(e.target.value));
+  document.getElementById(`loop-delay-value`).addEventListener('input', async (e) =>{
+    await setLoopDelay(parseFloat(e.target.value));
   });
 
-  document.getElementById(`run-loop`).addEventListener('change', (e) => {
+  document.getElementById(`run-loop`).addEventListener('change', async (e) => {
     if(e.target.checked){
-      startLoop();
+      await startLoop();
     } else {
-      stopLoop();
+      await stopLoop();
     }
   });
 
-  document.getElementById(`lfsr-enable`).addEventListener('click', (e) => {
-    enableLFSR(e.target.checked);
+  // LFSR Controls
+
+  document.getElementById(`lfsr-enable`).addEventListener('click', async (e) => {
+    await setLFSR();
   });
 
-  document.getElementById(`flip-lfsr-button`).addEventListener('click', (e) => {
+  document.getElementById('direction-select').addEventListener('change', async (e) => {
+    if(document.getElementById(`lfsr-enable`).checked){
+      await setLFSR();
+    }
+  });
+
+  document.getElementById(`flip-lfsr-button`).addEventListener('click', async (e) => {
     flipDirection();
-    setLFSR();
-  });
-
-  document.getElementById(`set-strobe-button`).addEventListener('click', (e) => {
-    setStrobe();
-  });
-
-  document.getElementById(`strobe-live`).addEventListener('change', (e) => {
-    if(e.target.checked){
-      document.getElementById(`set-strobe-button`).disabled=true;
-    } else {
-      document.getElementById(`set-strobe-button`).disabled=false;
-    }
-  });
-
-  document.getElementById('invert-on-count').addEventListener('change', (e) => {
-    if(document.getElementById(`strobe-live`).checked){
-      setStrobe();
-    }
-  });
-  document.getElementById('invert-off-count').addEventListener('change', (e) => {
-    if(document.getElementById(`strobe-live`).checked){
-      setStrobe();
-    }
-  });
-  document.getElementById('mute-on-count').addEventListener('change', (e) => {
-    if(document.getElementById(`strobe-live`).checked){
-      setStrobe();
-    }
-  });
-  document.getElementById('mute-off-count').addEventListener('change', (e) => {
-    if(document.getElementById(`strobe-live`).checked){
-      setStrobe();
-    }
-  });
-
-  document.getElementById('strobe-invert-enable').addEventListener('change', (e) => {
-    setStrobe();
-  });
-
-  document.getElementById('strobe-mute-enable').addEventListener('change', (e) => {
-    setStrobe();
-  });
-
-  document.getElementById(`strobe-enable`).addEventListener('click', (e) => {
-    enableStrobe(e.target.checked);
-  });
-
-  document.getElementById('delay-inc-button').addEventListener('click', (e) => {
-    nudgeDelayAmount(parseFloat(document.getElementById('nudge-amount').value)*0.01);
-  });
-
-  document.getElementById('delay-dec-button').addEventListener('click', (e) => {
-    nudgeDelayAmount(-parseFloat(document.getElementById('nudge-amount').value)*0.01);
+    await setLFSR();
   });
 
   //configures the refreshing of the LFSR settings in real-time
   for(let i = 1; i <= 3; i++){
-    document.getElementById(`tap-${i}-enable`).addEventListener('change', (e) => {
-      setLFSR();
+    document.getElementById(`tap-${i}-enable`).addEventListener('change', async (e) => {
+      await setLFSR();
     });
-    document.getElementById(`tap-${i}-value`).addEventListener('change', (e) => {
+    document.getElementById(`tap-${i}-value`).addEventListener('change', async (e) => {
       let en = document.getElementById(`tap-${i}-enable`);
       if(en.checked){
-        setLFSR();
+        await setLFSR();
       }
     });
     document.getElementById(`tap-${i}-randomize-button`).addEventListener('click', (e) => {
@@ -146,27 +104,83 @@ function initControlPanel(){
       q.dispatchEvent(new Event('change'));
     });
   }
-  document.getElementById('mod-enable').addEventListener('change', (e) => {
-    setLFSR();
+  document.getElementById('mod-enable').addEventListener('change', async (e) => {
+    await setLFSR();
   });
-  document.getElementById('mod-source-select').addEventListener('change', (e) => {
+  document.getElementById('mod-source-select').addEventListener('change', async (e) => {
     if(document.getElementById('mod-enable').checked){
-      setLFSR();
+      await setLFSR();
     }
   });
-  document.getElementById('mod-value').addEventListener('change', (e) => {
+  document.getElementById('mod-value').addEventListener('change', async (e) => {
     if(document.getElementById('mod-enable').checked){
-      setLFSR();
+      await setLFSR();
     }
   });
-  document.getElementById(`mod-randomize-button`).addEventListener('click', (e) => {
+  document.getElementById(`mod-randomize-button`).addEventListener('click', async (e) => {
     let q = document.getElementById(`mod-value`);
     q.value = Math.floor(8 * Math.random());
     let sel = document.getElementById(`mod-source-select`);
     sel.options.selectedIndex = Math.floor(7 * Math.random());
     if(document.getElementById('mod-enable').checked){
-      setLFSR();
+      await setLFSR();
     }
+  });
+
+  // Strobe Controls
+
+  document.getElementById(`set-strobe-button`).addEventListener('click', async (e) => {
+    await setStrobe();
+  });
+
+  document.getElementById(`strobe-live`).addEventListener('change', async (e) => {
+    if(e.target.checked){
+      document.getElementById(`set-strobe-button`).disabled=true;
+      await setStrobe();
+    } else {
+      document.getElementById(`set-strobe-button`).disabled=false;
+    }
+  });
+
+  document.getElementById('invert-on-count').addEventListener('change', async (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      await setStrobe();
+    }
+  });
+  document.getElementById('invert-off-count').addEventListener('change', async (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      await setStrobe();
+    }
+  });
+  document.getElementById('mute-on-count').addEventListener('change', async (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      await setStrobe();
+    }
+  });
+  document.getElementById('mute-off-count').addEventListener('change', async (e) => {
+    if(document.getElementById(`strobe-live`).checked){
+      await setStrobe();
+    }
+  });
+
+  document.getElementById('strobe-invert-enable').addEventListener('change', async (e) => {
+    await setStrobe();
+  });
+
+  document.getElementById('strobe-mute-enable').addEventListener('change', async (e) => {
+    await setStrobe();
+  });
+
+  document.getElementById(`strobe-enable`).addEventListener('click', async (e) => {
+    await setStrobe();
+  });
+
+  document.getElementById('delay-inc-button').addEventListener('click', (e) => {
+    nudgeDelayAmount(parseFloat(document.getElementById('nudge-amount').value)*0.01);
+  });
+
+  document.getElementById('delay-dec-button').addEventListener('click', (e) => {
+    nudgeDelayAmount(-parseFloat(document.getElementById('nudge-amount').value)*0.01);
   });
 
   document.getElementById('start-ramp').addEventListener('click', (e) => {
@@ -201,32 +215,23 @@ function initControlPanel(){
     document.getElementById('ramp-duration').value = e.target.value;
   });
 
-  //experimental: get current percentage and apply to widgets
+  // get current percentage and apply to widgets
   document.getElementById('loop-current').addEventListener('click', async (e) => {
-    var result = await getCurrentPercentage();
-    var elem = document.getElementById('loop-delay-range');
-    elem.value=result.result.delay_percentage;
+    const result = await getCurrentPercentage();
+    document.getElementById('loop-delay-range').value = result;
   });
   document.getElementById('ramp-start-current').addEventListener('click', async (e) => {
-    var result = await getCurrentPercentage();
-    var elem = document.getElementById('start-percent-range');
-    elem.value=result.result.delay_percentage;
+    const result = await getCurrentPercentage();
+    const elem = document.getElementById('start-percent-range');
+    elem.value = result;
     elem.dispatchEvent(new Event('input'));
   });
   document.getElementById('ramp-end-current').addEventListener('click', async (e) => {
-    var result = await getCurrentPercentage();
-    var elem = document.getElementById('end-percent-range');
-    elem.value=result.result.delay_percentage;
+    const result = await getCurrentPercentage();
+    const elem = document.getElementById('end-percent-range');
+    elem.value = result;
     elem.dispatchEvent(new Event('input'));
   });
-}
-
-async function getCurrentPercentage(){
-  let data = {};
-  data.type='get';
-  data.target='delay_percentage';
-  const value = await updateController(data);
-  return value;
 }
 
 function resetRegisterControls(){
@@ -247,174 +252,156 @@ function randomizeRegisterControls(){
   }
 }
 
-function setRegister() {
+async function send_request(url, method, data){
+  let settings = {}
+  if(method !== 'GET'){
+    settings.body = JSON.stringify(data)
+  }
+  settings.method = `${method.toUpperCase()}`
+  const {result} = await fetch(url, settings)
+  .then(async (response) => await response.json())
+  .catch((error) => console.error(error));
+  return result;
+}
+
+async function getCurrentPercentage(){
+  let url=`http://${hostname}.local/delay`;
+  let method='GET';
   let data = {};
-  data.type='set';
-  data.target='register';
-  data.parameters={
-    'state':[]
-  };
+  const result = await send_request(url, method, data);
+  return result;
+}
+
+async function setRegister() {
+  let url=`http://${hostname}.local/?target=register`;
+  let method='POST';
+  let data = {'parameters': {'state': []}};
 
   for(let i=0;i<8;i++){
     data.parameters.state.push(document.getElementById(`register-bit-${i}`).checked ? 1 : 0);
   }
 
-  updateController(data);
+  const result = await send_request(url, method, data);
+  return result;
 }
 
-async function updateController(data){
-  try{
-    const response = await fetch(`http://${hostname}.local`, {
-      method:'POST',
-      body:JSON.stringify(data)
-    })
-    if(response.ok){
-      return response.json();
-    } else {
-      return null
-    }
-  } catch(error){
-    console.error(error);
-  }
+async function setLoopDelay(delay){
+  let url=`http://${hostname}.local/?target=loop_delay`;
+  let method='POST';
+  let data = {'parameters':{}};
+  data.parameters.value = delay;
+
+  const result = await send_request(url, method, data);
+  document.getElementById('loop-delay-range').value = result;
+  return result;
 }
 
-function setLoopDelay(delay){
-  let data = {};
-  data.type='set';
-  data.target='loop_delay';
-  data.parameters={
-    'value' : delay
-  };
+async function multLoopDelay(mult){
+  let url=`http://${hostname}.local/?target=mult_loop_delay`;
+  let method='POST';
+  let data = {'parameters':{}};
+  data.parameters.value =  mult;
 
-  updateController(data);
+  const result = await send_request(url, method, data);
+  document.getElementById('loop-delay-range').value = result;
+  return result;
 }
 
-function multLoopDelay(value){
-  let data = {};
-  data.type='set';
-  data.target='mult_loop_delay';
-  data.parameters={
-    'value' : value
-  };
+async function divLoopDelay(div){
+  let url=`http://${hostname}.local/?target=div_loop_delay`;
+  let method='POST';
+  let data = {'parameters':{}};
+  data.parameters.value = div;
 
-  updateController(data);
+  const result = await send_request(url, method, data);
+  document.getElementById('loop-delay-range').value = result;
+  return result;
 }
 
-function divLoopDelay(value){
-  let data = {};
-  data.type='set';
-  data.target='div_loop_delay';
-  data.parameters={
-    'value' : value
-  };
+async function startLoop(){
+  let url=`http://${hostname}.local/?target=loop`;
+  let method='POST';
+  let data = {'parameters':{}};
+  data.parameters.retrigger = true;
 
-  updateController(data);
+  const result = await send_request(url, method, data);
+  return result;
 }
 
-function startLoop(){
-  let data = {};
-  data.type='set';
-  data.target='loop';
-  data.parameters={
-    'retrigger' : true
-  };
+async function stopLoop(){
+  let url=`http://${hostname}.local/?target=loop`;
+  let method='POST';
+  let data = {'parameters':{}};
+  data.parameters.retrigger = false;
 
-  updateController(data);
+  const result =  await send_request(url, method, data);
+  return result;
 }
 
-function stopLoop(){
-  let data = {};
-  data.type='set';
-  data.target='loop';
-  data.parameters={
-    'retrigger' : false
-  };
-
-  updateController(data);
-}
-
-function enableLFSR(value){
-  let data = {};
-  data.type='set';
-  if(value){
-    data.target='lfsr_enabled';
-  }else{
-    data.target='lfsr_disabled';
-  }
-  
-  updateController(data);
-}
-
-function setLFSR(){
-  let data = {};
-  data.type='set';
-  data.target='lfsr';
+async function setLFSR(){
+  let url=`http://${hostname}.local/?target=lfsr`;
+  let method='POST';
+  let data = {'parameters':{}};
   data.parameters={
     'taps' : [],
     'modQ' : parseInt(document.getElementById(`mod-value`).value),
     'modEnabled' : document.getElementById('mod-enable').checked,
     'modSource' : null,
-    'direction' : 'left'
+    'direction' : 'left',
+    'is_enabled' : document.getElementById(`lfsr-enable`).checked
   };
   for(let i = 1; i <= 3;i++){
     if(document.getElementById(`tap-${i}-enable`).checked){
       data.parameters.taps.push(parseInt(document.getElementById(`tap-${i}-value`).value));
     }
   }
-  const directions = document.getElementById('direction-select').options
+  const directions = document.getElementById('direction-select').options;
   data.parameters.direction = directions[directions.selectedIndex].value;
-  const sources = document.getElementById('mod-source-select').options
+  const sources = document.getElementById('mod-source-select').options;
   data.parameters.modSource = parseInt(sources[sources.selectedIndex].value);
 
-  updateController(data);
+  const result = await send_request(url, method, data);
+  return result;
 }
 
-function setStrobe(){
-  let data = {};
-  data.type='set';
-  data.target='strobe';
+async function setStrobe(){
+  let url=`http://${hostname}.local/?target=strobe`;
+  let method='POST';
+  let data = {'parameters':{}};
   data.parameters={
     'invert_enabled': document.getElementById('strobe-invert-enable').checked,
     'invert_on': parseInt(document.getElementById('invert-on-count').value),
     'invert_off': parseInt(document.getElementById('invert-off-count').value),
     'mute_enabled': document.getElementById('strobe-mute-enable').checked,
     'mute_on': parseInt(document.getElementById('mute-on-count').value),
-    'mute_off': parseInt(document.getElementById('mute-off-count').value)
+    'mute_off': parseInt(document.getElementById('mute-off-count').value),
+    'is_enabled': document.getElementById(`strobe-enable`).checked
   };
-  updateController(data);
+  const result = await send_request(url, method, data);
+  return result;
 }
 
-function enableStrobe(value){
-  let data = {};
-  data.type='set';
-  if(value){
-    data.target='strobe_enabled';
-  }else{
-    data.target='strobe_disabled';
-  }
+async function nudgeDelayAmount(amount){
+  let url=`http://${hostname}.local/?target=nudge_delay`;
+  let method='POST';
+  let data = {'parameters':{}};
+  data.parameters.value = amount;
 
-  updateController(data);
+  const result = await send_request(url, method, data);
+  document.getElementById('loop-delay-range').value = result;
+  return result;
 }
 
-function nudgeDelayAmount(value){
-  let data = {};
-  data.type='set';
-  data.target='nudge_delay';
-  data.parameters={'value':value};
-
-  updateController(data);
-}
-
-function setTempo(value){
+async function setTempo(value){
   let tempo = parseFloat(document.getElementById('tempo-base').value);
-  let data = {};
-  data.type='set';
-  data.target='tempo';
-  data.parameters={
-    'value': value * ( 60 / tempo )
-  };
+  let url=`http://${hostname}.local/?target=tempo`;
+  let method='POST';
+  let data = {'parameters':{}};
+  data.parameters.value = value * ( 60 / tempo );
 
-  updateController(data);
+ const result =  await send_request(url, method, data);
+ document.getElementById('loop-delay-range').value = result;
+ return result;
 }
 
 function flipDirection() {

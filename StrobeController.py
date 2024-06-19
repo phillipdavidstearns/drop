@@ -11,13 +11,11 @@ Basic flow:
 Strobe Controller > Register State  > CD4094 > CD4098 Mono stable > STROBE
 '''
 
-from threading import Thread, Timer, Lock
+from threading import Timer
 import logging
 
 from CD4094 import CD4094
-from Register import *
-from Operations import *
-from Counter import *
+from RegisterUtils import Register, Divider
 
 ################################################################
 # CLASS DEFINITION: StrobeController
@@ -27,8 +25,8 @@ class StrobeController():
     self.loop_delay = delay
     self.channels = channels
     self.timer = None
-    self.register = Register(size=channels)
-    self.last_register_state = Register(size=channels)
+    self.register = Register(length=channels)
+    self.last_register_state = 0
     self.output = CD4094(channels=channels)
     self.retrigger = False
     self.shutdown = False
@@ -37,7 +35,7 @@ class StrobeController():
     self.delay_max = 1
     self.lfsr_enabled = False
     self.lfsr_parameters = None
-    self.output_enable = True
+    self.output_enabled = True
     self.strobe_enabled = False
     self.strobe_parameters = None
     self.strobe_invert_on_count=0
@@ -62,7 +60,7 @@ class StrobeController():
   #-------Start and Stop Looping/Retriggering-------
 
   def start_loop(self):
-    if self.retrigger == False: 
+    if not self.retrigger:
       self.retrigger = True
       self.loop()
       return True
@@ -73,54 +71,44 @@ class StrobeController():
     self.retrigger = False
     try:
       self.timer.cancel()
+      return True
     except:
-      pass
-    return True
+      return False
 
   #-------Loop Delay Setter-------
+
+  def get_delay_percentage(self):
+    return (self.loop_delay -  self.delay_min) / (self.delay_max - self.delay_min)
 
   def set_loop_delay(self, percentage):
     percentage = min(max(percentage, 0.0),1.0)
     delay = percentage * (self.delay_max - self.delay_min) + self.delay_min
     self.loop_delay = delay
-    return self.loop_delay
-
-  def get_delay_percentage(self):
-    percentage = {
-     'delay_percentage' : (self.loop_delay -  self.delay_min) / (self.delay_max - self.delay_min)
-    }
-    return percentage
+    return self.get_delay_percentage()
 
   def nudge_loop_delay(self, percentage):
     new_loop_delay = self.loop_delay * ( percentage + 1.0 )
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
       self.loop_delay = new_loop_delay
-      return self.loop_delay
-    else:
-      return False
+    return self.get_delay_percentage()
 
   def set_tempo(self, tempo):
     if tempo <= self.delay_max and tempo >= self.delay_min:
       self.loop_delay = tempo
-      return self.loop_delay
-    else:
-      return False
+    return self.get_delay_percentage()
 
   def mult_loop_delay(self, value):
     new_loop_delay = self.loop_delay * value
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
       self.loop_delay = new_loop_delay
-      return self.loop_delay
-    else:
-      return False
+    return self.get_delay_percentage()
 
   def div_loop_delay(self, value):
     new_loop_delay = self.loop_delay / value
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
       self.loop_delay = new_loop_delay
-      return self.loop_delay
-    else:
-      return False
+    return self.get_delay_percentage()
+
 
   #-------Register Bit Getter and Setter-------
 
@@ -133,10 +121,14 @@ class StrobeController():
   #-------Register State Getter and Setter-------
 
   def get_register_state(self):
-    return self.register.get_state()
+    return self.register.state
 
-  def set_register_state(self, state):  
-    return self.register.set_state(state)
+  def set_register_state(self, state):
+    value = 0
+    for i in range(len(state)):
+      value |= state[i] << i
+    self.register.state = value
+    return self.register.state
 
   #-------Register Shift Left/Right-------
 
@@ -153,7 +145,7 @@ class StrobeController():
     return self.register.reset()
 
   def update(self):
-    register_state = self.register.get_state()
+    register_state = self.register.state
     if not ( register_state == self.last_register_state):
       self.output.update(register_state)
     self.last_register_state = register_state
@@ -162,6 +154,8 @@ class StrobeController():
 
   def set_lfsr_parameters(self, parameters):
     self.lfsr_parameters = parameters
+    if 'is_enabled' in self.lfsr_parameters:
+      self.set_lfsr_enabled(self.lfsr_parameters['is_enabled'])
     return self.lfsr_parameters
 
   def set_lfsr_enabled(self, value):
@@ -181,18 +175,20 @@ class StrobeController():
       self.shift_register_left(input_bit)
     elif self.lfsr_parameters['direction'] == 'right':
       self.shift_register_right(input_bit)
-    return self.register.get_state()
+    return self.register.state
 
   def set_strobe_parameters(self, parameters):
     self.strobe_parameters = parameters
     if self.strobe_parameters['mute_enabled'] == False:
-      self.output_enable = True
+      self.output_enabled = True
+    if 'is_enabled' in self.strobe_parameters:
+      self.set_strobe_enabled(self.strobe_parameters['is_enabled'])
     return self.strobe_parameters
 
   def set_strobe_enabled(self, value):
     self.strobe_enabled = value
     if self.strobe_enabled == False:
-      self.output_enable = True
+      self.output_enabled = True
     return self.strobe_enabled
   
   def strobe(self):
@@ -217,14 +213,14 @@ class StrobeController():
         if self.strobe_mute_off_count < self.strobe_parameters['mute_off']:
             self.strobe_mute_off_count+=1
         elif self.strobe_mute_off_count >= self.strobe_parameters['mute_off']:
-          self.output_enable = True
+          self.output_enabled = True
           self.strobe_mute_state = True
           self.strobe_mute_on_count=0
       elif self.strobe_mute_state == True:
         if self.strobe_mute_on_count < self.strobe_parameters['mute_on']:
           self.strobe_mute_on_count+=1
         elif self.strobe_mute_on_count >= self.strobe_parameters['mute_on']:
-          self.output_enable = False
+          self.output_enabled = False
           self.strobe_mute_state = False
           self.strobe_mute_off_count = 0
 
@@ -232,10 +228,9 @@ class StrobeController():
     try:
       if self.retrigger and not self.shutdown:
         self.timer = Timer(self.loop_delay, self.loop)
-        self.timer.daemon = True
         self.timer.start()
 
-        if self.output_enable:
+        if self.output_enabled:
           self.update()
           self.output.enable()
         else:
