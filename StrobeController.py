@@ -37,8 +37,10 @@ class StrobeController():
       logging.warning(f"Unable to initalize CD4094: {repr(e)}")
       self.output = None
     self.clock = Divider()
-    self.delay_min = config('MIN_DELAY',default=0.05,cast=float);
-    self.delay_max = config('MAX_DELAY',default=1.0,cast=float);
+    self.delay_min = config('MIN_DELAY', default=0.025,cast=float);
+    logging.debug(f"self.delay_min: {self.delay_min}")
+    self.delay_max = config('MAX_DELAY', default=2.0,cast=float);
+    logging.debug(f"self.delay_max: {self.delay_max}")
     self.lfsr_enabled = False
     self.lfsr_parameters = None
     self.output_enabled = True
@@ -151,8 +153,6 @@ class StrobeController():
       else:
         self.output.disable()
       self.output.update(self.register.state)
-      # sleep(self.loop_delay / 2)
-      # self.output.reset()
     self.clock.inc()
     if self.lfsr_enabled: self.lfsr()
     if self.strobe_enabled: self.strobe()

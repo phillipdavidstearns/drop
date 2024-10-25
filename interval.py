@@ -1,9 +1,10 @@
 from threading import Timer
 import logging
+from decouple import config
 
 class Interval(Timer):
-  MIN = 0.05
-  MAX = 2.0
+  MIN = config('MIN_DELAY', default=0.025, cast=float);
+  MAX = config('MAX_DELAY', default=2.0, cast=float);
 
   def __init__(self, interval, function):
     super().__init__(interval, function)
@@ -25,12 +26,7 @@ class Interval(Timer):
 
   @interval.setter
   def interval(self, interval):
-    if interval > self.MAX:
-      self._interval = self.MAX
-    elif interval < self.MIN:
-      self._interval = self.MIN
-    else:
-      self._interval = interval
+    self._interval = max(self.MIN, min(float(interval), self.MAX))
 
   @property
   def function(self):
