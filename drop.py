@@ -1,7 +1,10 @@
 #!/usr/bin/python3
 
 from time import sleep, time
+
 import logging
+logging.basicConfig(format='[CONTROLLER] - %(levelname)s | %(message)s', level=logging.DEBUG)
+
 import random
 import signal
 import os
@@ -17,21 +20,18 @@ from StrobeController import StrobeController
 
 #====================================================================================
 
-def randomData(qty_bits=8):
-  bits=[]
-  for i in range(qty_bits):
-    bits.append(round(random.random()))
-  logging.debug('randomBits: %s' % repr(bits))
-  return bits
-
-#====================================================================================
-
 def signalHandler(signum, frame, controller):
     print()
     logging.warning('Caught termination signal: %s' % signum)
     logging.info('Shutting down controller.')
     controller.stop()
     sys.exit()
+
+#====================================================================================
+
+async def send_command(function, *args):
+  result = await IOLoop.current().run_in_executor(None, function, *args)
+  return {'result': result}
 
 #====================================================================================
 
@@ -51,20 +51,21 @@ class DelayPercentageHandler(RequestHandler):
       self.set_status(500)
       self.write({'detail': f"DelayPercentageHandler: {repr(e)}"})
 
-async def send_command(function, *args):
-  result = await IOLoop.current().run_in_executor(None, function, *args)
-  return {'result': result}
-
 class MainHandler(RequestHandler):
   async def get(self):
-    self.render('index.html', hostname=os.uname()[1])
+    print(f"hostname: {hostname}")
+    self.render(
+      'index.html',
+      hostname=hostname,
+      port=config('PORT', default=8888, cast=int)
+    )
   async def post(self):
     target = self.get_query_argument('target', None)
     function = None
-    args=[]
+    args = []
     try:
       body = json.loads(self.request.body.decode('utf-8'))
-      parameters=body['parameters']
+      parameters = body['parameters']
       match target:
         case 'register':
           function = controller.set_register_state
@@ -86,9 +87,9 @@ class MainHandler(RequestHandler):
           args.append(parameters['value'])
         case 'loop':
           if parameters['retrigger']:
-            function = controller.start_loop
+            function = controller.start
           else:
-            function = controller.stop_loop
+            function = controller.stop
         case 'lfsr':
           function = controller.set_lfsr_parameters
           args.append(parameters)
@@ -108,6 +109,8 @@ class MainHandler(RequestHandler):
 #====================================================================================
 
 def make_app():
+  path = os.path.dirname(os.path.abspath(__file__))
+
   settings = dict(
     template_path = os.path.join(path, 'templates'),
     static_path = os.path.join(path, 'static'),
@@ -126,12 +129,11 @@ def make_app():
 if __name__ == '__main__':
 
   try:
-    logging.basicConfig(format='[CONTROLLER] - %(levelname)s | %(message)s', level=logging.DEBUG)
+    hostname = os.uname()[1]
+    if len(hostname.split('.')) != 2:
+      hostname += '.local'
 
-    path = os.path.dirname(os.path.abspath(__file__))
-    
     controller = StrobeController()
-
     signalHandler = partial(signalHandler, controller=controller)
     signal.signal(signal.SIGTERM, signalHandler)
     signal.signal(signal.SIGHUP, signalHandler)
@@ -140,8 +142,10 @@ if __name__ == '__main__':
     # make and run the controller web application
     application = make_app()
     http_server = HTTPServer(application)
-    http_server.listen(80)
+    http_server.listen(
+      config('PORT', default=8888, cast=int)
+    )
     main_loop = IOLoop.current()
     main_loop.start()
   except Exception as e:
-    print('Doh! %s' % repr(e))
+    logging.error('Doh! %s' % repr(e))

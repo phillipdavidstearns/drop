@@ -1,9 +1,6 @@
-var hostname;
-
 (function() {
   'use strict';
   window.addEventListener('load', async function() {
-    hostname = document.getElementById('hostname').value;
     initControlPanel();
   }, false);
 })();
@@ -50,7 +47,6 @@ function initControlPanel(){
     delay_elem.value=1.0;
     delay_elem.dispatchEvent(new Event('input'));
   });
-
 
   document.getElementById(`loop-delay-range`).addEventListener('input', (e) => {
     let delay_elem = document.getElementById(`loop-delay-value`);
@@ -265,7 +261,7 @@ async function send_request(url, method, data){
 }
 
 async function getCurrentPercentage(){
-  let url=`http://${hostname}.local/delay`;
+  let url='/delay';
   let method='GET';
   let data = {};
   const result = await send_request(url, method, data);
@@ -273,7 +269,7 @@ async function getCurrentPercentage(){
 }
 
 async function setRegister() {
-  let url=`http://${hostname}.local/?target=register`;
+  let url='/?target=register';
   let method='POST';
   let data = {'parameters': {'state': []}};
 
@@ -286,7 +282,7 @@ async function setRegister() {
 }
 
 async function setLoopDelay(delay){
-  let url=`http://${hostname}.local/?target=loop_delay`;
+  let url='/?target=loop_delay';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters.value = delay;
@@ -297,7 +293,7 @@ async function setLoopDelay(delay){
 }
 
 async function multLoopDelay(mult){
-  let url=`http://${hostname}.local/?target=mult_loop_delay`;
+  let url='/?target=mult_loop_delay';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters.value =  mult;
@@ -308,7 +304,7 @@ async function multLoopDelay(mult){
 }
 
 async function divLoopDelay(div){
-  let url=`http://${hostname}.local/?target=div_loop_delay`;
+  let url='/?target=div_loop_delay';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters.value = div;
@@ -319,7 +315,7 @@ async function divLoopDelay(div){
 }
 
 async function startLoop(){
-  let url=`http://${hostname}.local/?target=loop`;
+  let url='/?target=loop';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters.retrigger = true;
@@ -329,7 +325,7 @@ async function startLoop(){
 }
 
 async function stopLoop(){
-  let url=`http://${hostname}.local/?target=loop`;
+  let url='/?target=loop';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters.retrigger = false;
@@ -339,7 +335,7 @@ async function stopLoop(){
 }
 
 async function setLFSR(){
-  let url=`http://${hostname}.local/?target=lfsr`;
+  let url='/?target=lfsr';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters={
@@ -365,7 +361,7 @@ async function setLFSR(){
 }
 
 async function setStrobe(){
-  let url=`http://${hostname}.local/?target=strobe`;
+  let url='/?target=strobe';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters={
@@ -382,7 +378,7 @@ async function setStrobe(){
 }
 
 async function nudgeDelayAmount(amount){
-  let url=`http://${hostname}.local/?target=nudge_delay`;
+  let url='/?target=nudge_delay';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters.value = amount;
@@ -394,7 +390,7 @@ async function nudgeDelayAmount(amount){
 
 async function setTempo(value){
   let tempo = parseFloat(document.getElementById('tempo-base').value);
-  let url=`http://${hostname}.local/?target=tempo`;
+  let url='/?target=tempo';
   let method='POST';
   let data = {'parameters':{}};
   data.parameters.value = value * ( 60 / tempo );

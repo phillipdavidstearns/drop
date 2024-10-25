@@ -13,9 +13,15 @@ Strobe Controller > Register State  > CD4094 > CD4098 Mono stable > STROBE
 
 from threading import Timer
 import logging
-
-from CD4094 import CD4094
 from RegisterUtils import Register, Divider
+from time import sleep
+from decouple import config
+from interval import Interval
+
+try:
+  from CD4094 import CD4094
+except Exception as e:
+  logging.warning(f"Unable to load CD4094: {repr(e)}")
 
 ################################################################
 # CLASS DEFINITION: StrobeController
@@ -24,56 +30,45 @@ class StrobeController():
   def __init__(self, delay=1, channels=8):
     self.loop_delay = delay
     self.channels = channels
-    self.timer = None
     self.register = Register(length=channels)
-    self.last_register_state = 0
-    self.output = CD4094(channels=channels)
-    self.retrigger = False
-    self.shutdown = False
+    try:
+      self.output = CD4094(channels=channels)
+    except Exception as e:
+      logging.warning(f"Unable to initalize CD4094: {repr(e)}")
+      self.output = None
     self.clock = Divider()
-    self.delay_min = 0.025
-    self.delay_max = 1
+    self.delay_min = config('MIN_DELAY',default=0.05,cast=float);
+    self.delay_max = config('MAX_DELAY',default=1.0,cast=float);
     self.lfsr_enabled = False
     self.lfsr_parameters = None
     self.output_enabled = True
     self.strobe_enabled = False
     self.strobe_parameters = None
-    self.strobe_invert_on_count=0
-    self.strobe_invert_off_count=0
-    self.strobe_invert_state=False
-    self.strobe_mute_on_count=0
-    self.strobe_mute_off_count=0
-    self.strobe_mute_state=False
+    self.strobe_invert_on_count = 0
+    self.strobe_invert_off_count = 0
+    self.strobe_invert_state = False
+    self.strobe_mute_on_count = 0
+    self.strobe_mute_off_count = 0
+    self.strobe_mute_state = False
+    self._interval = None
 
-  #-------Main Thread/Process Start and Stop-------
-
-
-  def stop(self):
-    self.retrigger = False
-    self.shutdown = True
-    try:
-      self.timer.cancel()
-    except:
-      pass
-    self.output.stop()
+  def update_interval(self):
+    if self._interval:
+      self._interval.interval = self.loop_delay
 
   #-------Start and Stop Looping/Retriggering-------
 
-  def start_loop(self):
-    if not self.retrigger:
-      self.retrigger = True
-      self.loop()
-      return True
-    else:
-      return False
+  def start(self):
+    if not self._interval:
+      self._interval = Interval(self.loop_delay, self.update)
 
-  def stop_loop(self):
-    self.retrigger = False
-    try:
-      self.timer.cancel()
-      return True
-    except:
-      return False
+    if not self._interval.is_running:
+      self._interval.start()
+
+  def stop(self):
+    if self._interval:
+      self._interval.stop()
+      self._interval = None
 
   #-------Loop Delay Setter-------
 
@@ -84,29 +79,34 @@ class StrobeController():
     percentage = min(max(percentage, 0.0),1.0)
     delay = percentage * (self.delay_max - self.delay_min) + self.delay_min
     self.loop_delay = delay
+    self.update_interval()
     return self.get_delay_percentage()
 
   def nudge_loop_delay(self, percentage):
     new_loop_delay = self.loop_delay * ( percentage + 1.0 )
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
       self.loop_delay = new_loop_delay
+      self.update_interval()
     return self.get_delay_percentage()
 
   def set_tempo(self, tempo):
     if tempo <= self.delay_max and tempo >= self.delay_min:
       self.loop_delay = tempo
+      self.update_interval()
     return self.get_delay_percentage()
 
   def mult_loop_delay(self, value):
     new_loop_delay = self.loop_delay * value
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
       self.loop_delay = new_loop_delay
+      self.update_interval()
     return self.get_delay_percentage()
 
   def div_loop_delay(self, value):
     new_loop_delay = self.loop_delay / value
     if  new_loop_delay <= self.delay_max and new_loop_delay >= self.delay_min:
       self.loop_delay = new_loop_delay
+      self.update_interval()
     return self.get_delay_percentage()
 
 
@@ -145,12 +145,17 @@ class StrobeController():
     return self.register.reset()
 
   def update(self):
-    register_state = self.register.state
-    if not ( register_state == self.last_register_state):
-      self.output.update(register_state)
-    self.last_register_state = register_state
+    if self.output:
+      if self.output_enabled:
+         self.output.enable()
+      else:
+        self.output.disable()
+      self.output.update(self.register.state)
+      # sleep(self.loop_delay / 2)
+      # self.output.reset()
     self.clock.inc()
-    return register_state
+    if self.lfsr_enabled: self.lfsr()
+    if self.strobe_enabled: self.strobe()
 
   def set_lfsr_parameters(self, parameters):
     self.lfsr_parameters = parameters
@@ -171,10 +176,11 @@ class StrobeController():
         self.lfsr_parameters['modSource'],
         self.lfsr_parameters['modQ']
       )
-    if self.lfsr_parameters['direction'] == 'left':
-      self.shift_register_left(input_bit)
-    elif self.lfsr_parameters['direction'] == 'right':
-      self.shift_register_right(input_bit)
+    match self.lfsr_parameters['direction']:
+      case 'left':
+        self.shift_register_left(input_bit)
+      case 'right':
+        self.shift_register_right(input_bit)
     return self.register.state
 
   def set_strobe_parameters(self, parameters):
@@ -223,22 +229,3 @@ class StrobeController():
           self.output_enabled = False
           self.strobe_mute_state = False
           self.strobe_mute_off_count = 0
-
-  def loop(self):
-    try:
-      if self.retrigger and not self.shutdown:
-        self.timer = Timer(self.loop_delay, self.loop)
-        self.timer.start()
-
-        if self.output_enabled:
-          self.update()
-          self.output.enable()
-        else:
-          self.output.disable()
-          self.update()
-
-        if self.lfsr_enabled: self.lfsr()
-        if self.strobe_enabled: self.strobe()
-
-    except Exception as e:
-      logging.error('in StrobeController.loop(): %s' % repr(e))

@@ -71,7 +71,7 @@ Parts:
 
 These steps require the use of a USB WiFi dongle capable of AP mode. The Panda PAU05 WiFi USB dongle does this for about $10.
 
-1. `sudo apt-get install -y hostapd dnsmasq netfilter-persistent iptables-persistent`
+1. `sudo apt-get install -y dhcpcd hostapd dnsmasq netfilter-persistent iptables-persistent`
 1. `sudo systemctl unmask hostapd`
 1. `sudo systemctl enable hostapd`
 1. `sudo nano /etc/dhcpcd.conf` and add to the end:
@@ -93,6 +93,14 @@ net.ipv4.ip_forward=1
 ```
 sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 sudo netfilter-persistent save
+```
+
+1. `sudo nano /etc/NetworkManager/NetworkManager.conf`
+
+
+```
+[keyfile]
+unmanaged-devices=interface-name:wlan1
 ```
 
 1. make a copy of the default config file: `sudo cp /etc/dnsmasq.conf{,.bak}`
